@@ -1,0 +1,10 @@
+{
+  "name": "ちょっとよかった日記",
+  "short_name": "ちょっと日記",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f6f1e9",
+  "theme_color": "#f6f1e9",
+  "lang": "ja",
+  "description": "プラスを埋もれさせない、ローカル保存の日記"
+}

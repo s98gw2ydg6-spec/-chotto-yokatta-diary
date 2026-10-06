@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6f1e9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ちょっと日記">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>ちょっとよかった日記</title>
+<style>
+:root{--bg:#f6f1e9;--card:#fffdf9;--ink:#403b36;--muted:#8b837b;--line:#e7ded3;--green:#6f9278;--red:#ad7770;--gray:#85817b}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;line-height:1.65}
+main{max-width:650px;margin:auto;padding:calc(24px + env(safe-area-inset-top)) 17px calc(45px + env(safe-area-inset-bottom))}
+h1{font-size:25px;margin:0;font-weight:750}.sub{font-size:13px;color:var(--muted);margin:2px 0 22px}
+.tabs{display:flex;gap:8px;margin-bottom:14px}.tab{flex:1;background:#eee7de;color:#635c54;border:0;border-radius:12px;padding:10px;font:inherit}.tab.on{background:#5f765f;color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:11px 0;box-shadow:0 2px 10px rgba(70,50,30,.035)}
+.date{font-size:13px;color:var(--muted);margin-bottom:10px}.label{font-weight:700;font-size:15px}.hint{font-size:12px;color:var(--muted);margin:2px 0 8px}
+textarea{width:100%;min-height:76px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px;font:inherit;color:var(--ink);resize:vertical;outline:none}
+textarea:focus{border-color:#b6a89a;box-shadow:0 0 0 3px #b6a89a22}.good .label{color:var(--green)}.bad .label{color:var(--red)}.normal .label{color:var(--gray)}
+button{border:0;border-radius:12px;padding:11px 14px;font:inherit}.primary{width:100%;background:#5f765f;color:#fff;font-weight:700;margin-top:3px}
+.secondary{background:#eee7de;color:#5c554d}.danger{background:#f2e4e1;color:#9a5f58}
+.msg{text-align:center;color:var(--muted);font-size:13px;min-height:25px;padding:7px}
+.section-title{font-weight:700;margin:20px 2px 8px}.entry{border-top:1px solid var(--line);padding:14px 2px}.entry:first-child{border-top:0}
+.entry-date{font-weight:700;font-size:14px;margin-bottom:5px}.line{font-size:13px;margin:4px 0}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin:0 7px 1px 1px}.g{background:var(--green)}.b{background:var(--red)}.n{background:var(--gray)}
+.quote{background:#f0e9df;border-radius:14px;padding:13px;font-size:14px;margin:10px 0}.quote small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.row{display:flex;gap:8px}.row>*{flex:1}.file{display:none}.small{font-size:11px;color:var(--muted);margin-top:9px}
+.hidden{display:none!important}
+footer{text-align:center;color:var(--muted);font-size:11px;margin-top:20px}
+</style>
+</head>
+<body>
+<main>
+<h1>ちょっとよかった日記</h1>
+<div class="sub">いい日かどうかは判定しない。あったものを、そのまま残す。</div>
+
+<div class="tabs">
+<button class="tab on" data-tab="write">今日</button>
+<button class="tab" data-tab="past">過去</button>
+<button class="tab" data-tab="data">データ</button>
+</div>
+
+<section id="write">
+<div class="date" id="today"></div>
+<div class="card good"><div class="label">ちょっとよかった</div><div class="hint">小さくていい。「映画が面白かった」だけでも成立。</div><textarea id="good" placeholder="今日、ちょっとでも良かったこと"></textarea></div>
+<div class="card normal"><div class="label">ふつう・なんでもない</div><div class="hint">特に感情が動かなかったことも、そのまま。</div><textarea id="normal" placeholder="今日あったこと"></textarea></div>
+<div class="card bad"><div class="label">しんどかった</div><div class="hint">ここは遠慮なく負でいい。吐き出してOK。</div><textarea id="bad" placeholder="嫌だったこと、疲れたこと、モヤモヤ"></textarea></div>
+<button class="primary" id="save">今日の記録を残す</button>
+<div class="msg" id="msg"></div>
+<div class="quote hidden" id="memory"></div>
+</section>
+
+<section id="past" class="hidden">
+<div class="section-title">最近の記録</div>
+<div id="entries"></div>
+</section>
+
+<section id="data" class="hidden">
+<div class="card">
+<div class="label">データを持ち運ぶ</div>
+<div class="hint">バックアップは人間が読めるテキスト。端末を替えるときに使える。</div>
+<div class="row"><button class="secondary" id="export">バックアップを書き出す</button><button class="secondary" id="importBtn">復元する</button></div>
+<input class="file" id="file" type="file" accept=".txt,.json,text/plain,application/json">
+<div class="small">この日記は外部サーバーへ送信しません。データはこの端末のブラウザ内に保存します。</div>
+</div>
+<div class="card">
+<div class="label">データを消す</div>
+<div class="hint">バックアップを取ってから使ってね。</div>
+<button class="danger" id="clear">この端末の記録を全部消す</button>
+</div>
+</section>
+
+<footer>オフラインでも使えるローカル日記</footer>
+</main>
+
+<script>
+const KEY="chotto_yokatta_diary_v2";
+const $=id=>document.getElementById(id);
+const todayISO=()=>new Date().toLocaleDateString("sv-SE");
+const pretty=d=>new Date(d+"T00:00:00").toLocaleDateString("ja-JP",{year:"numeric",month:"long",day:"numeric",weekday:"short"});
+const load=()=>JSON.parse(localStorage.getItem(KEY)||"[]");
+const store=a=>localStorage.setItem(KEY,JSON.stringify(a));
+const esc=s=>s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function renderEntries(){
+ const a=load().sort((x,y)=>y.date.localeCompare(x.date));
+ if(!a.length){$("entries").innerHTML='<div class="small">まだ記録がないよ。</div>';return}
+ $("entries").innerHTML=a.map(x=>`<div class="entry">
+ <div class="entry-date">${pretty(x.date)}</div>
+ ${x.good?`<div class="line"><span class="dot g"></span>${esc(x.good)}</div>`:""}
+ ${x.normal?`<div class="line"><span class="dot n"></span>${esc(x.normal)}</div>`:""}
+ ${x.bad?`<div class="line"><span class="dot b"></span>${esc(x.bad)}</div>`:""}
+ </div>`).join("");
+}
+function randomGood(){
+ const a=load().filter(x=>x.good?.trim());
+ if(!a.length)return;
+ const x=a[Math.floor(Math.random()*a.length)];
+ $("memory").innerHTML=`「${esc(x.good.trim())}」<small>${pretty(x.date)}の記録</small>`;
+ $("memory").classList.remove("hidden");
+}
+function loadToday(){
+ const x=load().find(x=>x.date===todayISO())||{};
+ $("good").value=x.good||"";$("normal").value=x.normal||"";$("bad").value=x.bad||"";
+ $("today").textContent=pretty(todayISO());
+}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+ ["write","past","data"].forEach(id=>$(id).classList.toggle("hidden",id!==b.dataset.tab));
+ if(b.dataset.tab==="past")renderEntries();
+});
+$("save").onclick=()=>{
+ const item={date:todayISO(),good:$("good").value.trim(),normal:$("normal").value.trim(),bad:$("bad").value.trim()};
+ if(!item.good&&!item.normal&&!item.bad){$("msg").textContent="今日は何も書かない日でも大丈夫。";return}
+ const a=load().filter(x=>x.date!==item.date);a.push(item);store(a);
+ $("msg").textContent="記録した。今日はこれでおしまい。";
+ randomGood();
+};
+$("export").onclick=()=>{
+ const payload={app:"ちょっとよかった日記",version:2,exportedAt:new Date().toISOString(),entries:load()};
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:"text/plain;charset=utf-8"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ const stamp=todayISO();a.href=url;a.download=`chotto-yokatta-backup-${stamp}.txt`;a.click();URL.revokeObjectURL(url);
+};
+$("importBtn").onclick=()=>$("file").click();
+$("file").onchange=async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{
+  const text=await f.text(),p=JSON.parse(text);
+  if(!p || !Array.isArray(p.entries))throw new Error();
+  if(!confirm(`${p.entries.length}件の記録を復元します。現在の記録は置き換えられます。よろしい？`))return;
+  store(p.entries);loadToday();renderEntries();$("msg").textContent="復元したよ。";
+ }catch{alert("バックアップファイルを読み込めませんでした。")}
+ e.target.value="";
+};
+$("clear").onclick=()=>{
+ if(confirm("この端末に保存されている日記を全部削除します。本当によろしい？")){
+  localStorage.removeItem(KEY);loadToday();renderEntries();alert("削除しました。");
+ }
+};
+loadToday();
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+</script>
+</body>
+</html>
